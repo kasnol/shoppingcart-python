@@ -1,10 +1,23 @@
 
 import uuid
 
+# Global Variables
+current_shoppingcart = []
+current_user = None
+current_sessionid = None
+
 
 ### Part A Shopping Cart General Functions
 #   A welcome message should initially be displayed in the e-commerce application, such as "Welcome to the Demo Marketplace".
+
+def get_user_attribute(attribute):
+    global current_user
+    return current_user[attribute]
+
+
+
 def display_welcome_msg():
+    global current_sessionid
     print("-------------------------------------------------")
     print("-- Welcome to the Demo Marketplace             --")
     print("-------------------------------------------------")
@@ -12,6 +25,8 @@ def display_welcome_msg():
 
     
 def display_login():
+    global current_user, current_shoppingcart, current_sessionid
+
     while True:
         username = input("Please input your username : ")
         password = input("Please input your password : ")
@@ -19,23 +34,20 @@ def display_login():
         user = lookup_user(username, password)
         if user:
             print("User Found " )
-            print(user)
-            global current_shoppingcart, current_user, current_role, current_sessionid
-            current_shoppingcart =[]
-            current_user = user["user_name"]
-            current_role = user["user_role"]
-            current_sessionid = generate_sessionid()
+            current_user = user
+            current_sessionid = create_login_sessionid()
             print("Generated session ID:", current_sessionid)
-            if current_role == "A":
+            if get_user_attribute("user_role") == "A":
                 display_admin_menu()
-            elif current_role == "U":
+            elif get_user_attribute("user_role") == "U":
                 display_user_menu()
             break
         else:
             print("Invalid username or password")
 
 
-def generate_sessionid():
+def create_login_sessionid():
+        print("Create Login Session")
         return str(uuid.uuid4())
 
 
@@ -46,19 +58,18 @@ def lookup_user(username, password):
     return None
 
 
-def create_login_session():
-    print("Create Login Session")
-
 def init_static_userdb():
     print("Initiaze Users Database")
 
 def lookup_product_category():
         print("Initiaze Users Database")
 
-### Part B User Functions
-def display_user_menu():
+### Part B Admin Functions
+def display_admin_menu():
+    global current_sessionid
     print("-------------------------------------------------")
-    print("-- Welcome to the User Menu             --")
+    print("-- Welcome to the Admin Menu")
+    print("-- Login Session ID: ", current_sessionid)
     print("-------------------------------------------------")
     print("-- Choose an option below: ")
     print("-- 1. Manage Product Catalogue ")
@@ -66,17 +77,80 @@ def display_user_menu():
     print("-- 3. Logout ")
     print("-------------------------------------------------")
 
-### Part C Admin Functions
-def display_admin_menu():
+def display_admin_manage_product_menu():
+    global current_sessionid
     print("-------------------------------------------------")
-    print("-- Welcome to the Admin Menu             --")
+    print("-- Manage Product Catalogue")
+    print("-- Login Session ID: ", current_sessionid)
     print("-------------------------------------------------")
+    print("-- Choose an option below: ")
+    print("-- 1. Display Current Products in Catalogue ")
+    print("-- 2. Add New Product to Catalogue ")
+    print("-- 3. Modify existing product from Catalogue ")
+    print("-------------------------------------------------")
+
+def admin_add_product():
+    global current_sessionid
+    print("-------------------------------------------------")
+    print("-- Add New Product to Catalogue")
+    print("-- Login Session ID: ", current_sessionid)
+    print("-------------------------------------------------")
+    add_product_name = input("Please enter the new product name")
+    add_product_price = input("Please enter the price for new product ", add_product_name)
+    add_product_quantity = input("Please enter the the product available quantity")
+
+
+
+
+### Part C User Functions
+def display_user_menu():
+    global current_sessionid
+
+    print("-------------------------------------------------")
+    print("-- Welcome to the User Menu")
+    print("-- Session ID: ", current_sessionid)
+    print("-------------------------------------------------")
+    display_items_in_catalogue()
     print("-- Choose an option below: ")
     print("-- 1. Add Product To Cart ")
     print("-- 2. Remove Product From Cart ")
-    print("-- 3. Display Current Cart ")
+    print("-- 3. Display items in current cart ")
     print("-- 4. Logout ")
     print("-------------------------------------------------")
+
+
+def user_add_product_to_cart():
+    add_product = input("Input the product ID you want to add to cart")
+    add_product_qty = input("Input the number product")
+    print("Product added to cart")
+
+
+def user_remove_product_from_cart():
+    display_items_in_cart()
+    add_product = input("Input the product ID you want to remove from cart")
+    print("Product removed from cart")
+
+
+def display_items_in_cart():
+    print("-------------------------------------------------")
+    print("-- You have current items in cart: ")
+    print("-------------------------------------------------")
+
+
+def display_items_in_catalogue():
+    print("-------------------------------------------------")
+    print("-- Current list of products in product catalogue ")
+    print("-------------------------------------------------")
+    header = "| {0:<10} | {1:<30} | {2:<15} | {3:<10} |".format("Product ID", "Product Name", "Category ID", "Price")
+    print(header)
+    print("-" * len(header))
+
+    for product in product_catalogues:
+        row = "| {product_id:<10} | {product_name:<30} | {category_id:<15} | {product_price:<10} |".format(**product)
+        print(row)
+    print("-------------------------------------------------")
+
+
 
 ### Part D Shopping Cart Arrays
 
@@ -101,17 +175,12 @@ product_categories = [
 ]
 
 users_db = [
-     {"user_id": 1, "user_name": "user1", "user_password": "pass1", "user_role": "U"},
-     {"user_id": 2, "user_name": "user2", "user_password": "pass2", "user_role": "U"},
-     {"user_id": 3, "user_name": "admin", "user_password": "adminpass", "user_role": "A"},     
+     {"user_id": 1, "user_name": "user1", "user_password": "pass1", "user_role": "U", "email": "user1@demo-shoppingcart.com"},
+     {"user_id": 2, "user_name": "user2", "user_password": "pass2", "user_role": "U", "email": "user2@demo-shoppingcart.com"},
+     {"user_id": 3, "user_name": "admin", "user_password": "adminpass", "user_role": "A", "email": "admin@demo-shoppingcart.com"},     
 ]
 
 
-# Global Variables
-current_shoppingcart = []
-current_user = None
-current_role = None
-current_sessionid = None
 
 
 #It is necessary to construct a sample product catalog with three to four product categories, such as Boots, Coats, Jackets, and Caps. 
