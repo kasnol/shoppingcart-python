@@ -1,18 +1,20 @@
+import uuid, sys
 
-import uuid
 
 # Global Variables
 current_shoppingcart = []
 current_user = None
 current_sessionid = None
 
+# ANSI escape codes for some color output
+COLOR_ATTENTION = '\033[91m'
+COLOR_HIGHLIGHT = '\033[92m'
+COLOR_ACTION = '\033[91m'
+COLOR_NORMAL = '\033[0m'  
 
 
 ### Part A Shopping Cart General Functions
 #   A welcome message should initially be displayed in the e-commerce application, such as "Welcome to the Demo Marketplace".
-
-
-
 
 def get_user_attribute(attribute):
     global current_user
@@ -21,10 +23,10 @@ def get_user_attribute(attribute):
 
 
 def display_welcome_msg():
-    global current_sessionid
-    print("-------------------------------------------------")
+    global current_sessionid, COLOR_ATTENTION, COLOR_HIGHLIGHT, COLOR_NORMAL
+    print(COLOR_HIGHLIGHT + "-------------------------------------------------")
     print("-- Welcome to the Demo Marketplace             --")
-    print("------------------------------------------------- \n")
+    print("------------------------------------------------- \n"  + COLOR_NORMAL)
 
     
 def display_login():
@@ -44,7 +46,9 @@ def display_login():
                 display_user_menu()
             break
         else:
-            print("Invalid username or password")
+            print(COLOR_ATTENTION + "Wrong username or password combination" + COLOR_NORMAL)
+            print("------------------------------------------------- \n")
+
 
 # For simplicity, use system generated UUID as session ID
 def create_login_sessionid():
@@ -62,14 +66,14 @@ def lookup_user(username, password):
 
 ### Part B Admin Functions
 def display_admin_menu():
-    global current_sessionid
+    global current_sessionid, COLOR_ATTENTION, COLOR_HIGHLIGHT, COLOR_NORMAL
     print("-------------------------------------------------")
     print("-- Admin Menu")
     print("-- Login Session ID: ", current_sessionid)
     print("-------------------------------------------------")
     
     while True:
-        print("-- Choose an option below: ")
+        print("-- Choose an option below: \n")
         print("-- 1. Manage Product Catalogue ")
         print("-- 2. Manage Product Category ")
         print("-- Q. Logout ")
@@ -80,20 +84,20 @@ def display_admin_menu():
             display_admin_manage_product_menu()
         elif option == '2':
             display_admin_manage_product_category()
-        elif option == 'Q':
+        elif option.upper() == 'Q':
             print("Logging out...")
             break
         else:
             print("Invalid option. Please enter a valid option (1-3):")
 
 def display_admin_manage_product_menu():
-    global current_sessionid
+    global current_sessionid, COLOR_ATTENTION, COLOR_HIGHLIGHT, COLOR_NORMAL
     while True:
         print("-------------------------------------------------")
         print("-- Admin: Manage Product Catalogue")
         print("-- Login Session ID: ", current_sessionid)
         print("-------------------------------------------------")
-        print("-- Choose an option below: ")
+        print("-- Choose an option below: \n")
         print("-- 1. Display Current Products in Catalogue ")
         print("-- 2. Add New Product to Catalogue ")
         print("-- 3. Modify existing product in Catalogue ")
@@ -117,13 +121,13 @@ def display_admin_manage_product_menu():
             print("Invalid option. Please enter a valid option (1-4 or B)")
 
 def display_admin_manage_product_category():
-    global current_sessionid
+    global current_sessionid, COLOR_ATTENTION, COLOR_HIGHLIGHT, COLOR_NORMAL
     while True:
         print("-------------------------------------------------")
         print("-- Admin: Manage Product Category")
         print("-- Login Session ID: ", current_sessionid)
         print("-------------------------------------------------")
-        print("-- Choose an option below: ")
+        print("-- Choose an option below: \n")
         print("-- 1. Display Current Product Categories ")
         print("-- 2. Add a New Category ")
         print("-- 3. Modify an existing Category ")
@@ -162,7 +166,7 @@ def admin_remove_category():
     print(f"Category with ID {category_id} removed.")
 
 def admin_add_product():
-    global current_sessionid
+    global current_sessionid, COLOR_ATTENTION, COLOR_HIGHLIGHT, COLOR_NORMAL
     print("-------------------------------------------------")
     print("-- Admin Menu: Add New Product to Catalogue")
     print("-- Login Session ID: ", current_sessionid)
@@ -179,38 +183,42 @@ def admin_remove_product():
 
 ### Part C User Functions
 def display_user_menu():
-    global current_sessionid
+    global current_sessionid, COLOR_ATTENTION, COLOR_HIGHLIGHT, COLOR_NORMAL
     while True:
-        print("-------------------------------------------------")
+        print(COLOR_HIGHLIGHT + "-------------------------------------------------")
         print("-- User Menu ")
-        print(f"-- Welcome User {current_user['user_name']} !")
+        print(f"-- Welcome " + COLOR_ATTENTION + f"{current_user['user_name']} " + COLOR_HIGHLIGHT + "!")
         print("-- Session ID: ", current_sessionid)
-        print("-------------------------------------------------")
-        print("Choose an option below: ")
-        print("   1. Add Product To Cart ")
-        print("   2. Remove Product From Cart ")
-        print("   3. Display items in current cart ")
-        print("   4. Checkout ")
+        print("-------------------------------------------------" + COLOR_NORMAL)
+        print("Choose an option below: \n")
+        print("   1. Display Current Products in Catalogue ")              
+        print("   2. Add a Product To Cart from Catalogue ")
+        print("   3. Remove Product From Cart ")
+        print("   4. Display items in your shopping cart ")
+        print("   5. Checkout ")
         print("   Q. Logout and quit")
-        print("-------------------------------------------------")
+        print("\n")
         option = input("Enter your option (1-4 or Q): ")
 
         if option == '1':
-            user_add_product_to_cart(current_sessionid)
+            product_catalogue.display_product_catalogue()
         elif option == '2':
-            user_remove_product_from_cart(current_sessionid)
+            user_add_product_to_cart(current_sessionid)
         elif option == '3':
-            shopping_cart.display_items_in_cart(current_sessionid)
+            user_remove_product_from_cart(current_sessionid)
         elif option == '4':
-            pgw.initiate_checkout(current_sessionid)
-        elif option == 'Q':
+            shopping_cart.display_items_in_cart(current_sessionid)
+        elif option == '5':
+            initiate_checkout(current_sessionid)
+        elif option.upper() == 'Q':
+            current_sessionid = None
             print("Logging out now, see you next time !")
             break
         else:
-            print("Invalid option, please choose a number between 1 and 4.")
+            print("Invalid option, please choose a number between 1 and 4")
 
 def user_add_product_to_cart(current_sessionid):
-    shopping_cart.display_items_in_cart(current_sessionid)
+    product_catalogue.display_product_catalogue()
     while True:  # Validation logic to force input is numeric & valid 
         try:
             product_id_input = input("Input the product ID you want to add to cart: ")
@@ -228,49 +236,52 @@ def user_add_product_to_cart(current_sessionid):
             print("Invalid input. Please enter a numeric quantity to add to cart.")
 
     shopping_cart.add_product_to_cart(current_sessionid, product_id, product_qty)
-    print(f"-- Product {product_id} with qty {product_qty} added to cart")
 
 
 def user_remove_product_from_cart(current_sessionid):
-    while True:  # Validation logic to force input is numeric & valid 
-        try:
-            product_id = int(input("Input the product ID you want to remove from cart"))
-            break 
-        except ValueError:
-            print("Invalid input. Please enter a numeric product id.")
-        shopping_cart.remove_product(current_sessionid, product_id)
-        print(f"-- Product {product_id} removed from cart")
 
-
-def display_items_in_cart(self, session_id):   
     # Check if the cart is empty
-    if not any(item['session_id'] == session_id for item in self.cart):
-        print("-------------------------------------------------")
-        print("-- Your cart is empty.")
-        print("-------------------------------------------------")
+    if not any(item['session_id'] == current_sessionid for item in shopping_cart.cart):
+        print(COLOR_ATTENTION + "-------------------------------------------------")
+        print("-- Your cart is currently empty." )
+        print("-------------------------------------------------"+ COLOR_NORMAL)
+        display_user_menu()  # Call the display_user_menu to return to user menu
         return
-
-    # Table headers
-    print("-- You have current items in cart: ")
-    header = "| {0:<10} | {1:<30} | {2:<10} | {3:<10} |".format("Product ID", "Name", "Quantity", "Price")
-    print(header)
-    print("-" * len(header))
-
-    # Table rows
-    for item in self.cart:
-        if item['session_id'] == session_id:
-            row = "| {product_id:<10} | {product_name:<30} | {quantity:<10} | {product_price:<10} |".format(**item)
-            print(row)
-    print("-" * len(header))
+    shopping_cart.display_items_in_cart(current_sessionid)
+    while True:
+        try:
+            product_id = int(input("Input the product ID you want to remove from cart: "))
+            # Check if the product exists in the cart
+            if any(item['session_id'] == current_sessionid and item['product_id'] == product_id for item in shopping_cart.cart):
+                shopping_cart.remove_product_from_cart(current_sessionid, product_id)
+                print(COLOR_ATTENTION + "-------------------------------------------------")
+                print(f"-- Product {product_catalogue.lookup_product_name(product_id)} is removed from cart ")
+                print("-------------------------------------------------"+COLOR_NORMAL)
+                break
+            else:
+                print(COLOR_ATTENTION + "-------------------------------------------------")
+                print(f"-- Your inputted product id is not found in your shopping cart.")
+                print("-------------------------------------------------"+COLOR_NORMAL)
+        except ValueError:
+            print(COLOR_ATTENTION + "-- Invalid input. Please enter a numeric product id." + COLOR_NORMAL)
 
 def initiate_checkout(session_id):
+    global COLOR_ATTENTION, COLOR_HIGHLIGHT, COLOR_NORMAL, current_sessionid
+
+    # Check if the cart is empty
+    if not any(item['session_id'] == session_id for item in shopping_cart.cart):
+        print(COLOR_ATTENTION + "-------------------------------------------------")
+        print("-- Currently, there are no items in your cart. Please add products to your cart to perform checkout.")
+        print("-------------------------------------------------" + COLOR_NORMAL)
+        return
+
     while True:
         print("-------------------------------------------------")
-        print("-- User: Checkout ")
+        print("--" + COLOR_HIGHLIGHT + " User: Checkout Shopping Cart " + COLOR_NORMAL)
         print("-------------------------------------------------")
         shopping_cart.display_items_in_cart(session_id)
         invoice_total = shopping_cart.calculate_invoice(session_id)
-        print(f"Total Amount in cart: {invoice_total}")
+        print(COLOR_HIGHLIGHT + f"Total Amount in cart: {invoice_total}" + COLOR_NORMAL)
 
         # Display available payment gateways
         pgw.display_available_pgw()
@@ -279,17 +290,15 @@ def initiate_checkout(session_id):
         if checkout_pgw.upper() == 'B':
             break  # Go back to the previous menu
         elif checkout_pgw == '1':
-            pgw.checkout_by_visa_master(session_id, invoice_total)
-            break
+            PaymentGateway.checkout_by_visa_master(session_id, invoice_total)
         elif checkout_pgw == '2':
-            pgw.checkout_by_paypal(session_id, invoice_total)
-            break
-        elif checkout_pgw == '3':
-            pgw.checkout_by_bitcoin(session_id, invoice_total)
-            break
-        else:
-            print("Invalid payment method selected. Please try again.")
-
+            PaymentGateway.checkout_by_paypal(session_id, invoice_total)
+        
+        print("-------------------------------------------------")
+        print("You will now be logout; thank you for placing the order !")
+        print("-------------------------------------------------")
+        current_sessionid = None
+        sys.exit(0)
 
 ### Part D Shopping Cart Application classes
 
@@ -320,19 +329,29 @@ class ProductCatalogue:
         self.products = [product for product in self.products if product["product_id"] != product_id]
 
     def display_product_catalogue(self):
-        header = "| {0:<10} | {1:<30} | {2:<15} | {3:<10} |".format("Product ID", "Product Name", "Category ID", "Price")
-
+        global COLOR_NORMAL, COLOR_ACTION, COLOR_HIGHLIGHT
+        header = "| {0:<10} | {1:<30} | {2:<20} | {3:<10} |".format("Product ID", "Product Name", "Category ID", "Price")
         print("-" * len(header))
-        print("-- Current list of products in current product catalogue ")
+        print(COLOR_HIGHLIGHT + "-- Current list of products in current product catalogue " + COLOR_NORMAL)
         print("-" * len(header))
-        header = "| {0:<10} | {1:<30} | {2:<15} | {3:<10} |".format("Product ID", "Product Name", "Category ID", "Price")
+        header = "| {0:<10} | {1:<30} | {2:<20} | {3:<10} |".format("Product ID", "Product Name", "Category", "Price")
         print(header)
         print("-" * len(header))
         for product in self.products:
-            row = "| {product_id:<10} | {product_name:<30} | {category_id:<15} | {product_price:<10} |".format(**product)
+            category_name = product_category.lookup_category_name(product['category_id'])  # Lookup category name
+            row = "| {product_id:<10} | {product_name:<30} | {category:<20} | {product_price:<10} |".format(
+                product_id=product['product_id'],
+                product_name=product['product_name'],
+                category=category_name,
+                product_price=product['product_price'])
             print(row)
         print("-" * len(header))
 
+    def lookup_product_name(self, product_id):
+            for product in self.products:
+                if product['product_id'] == product_id:
+                    return product['product_name']
+            return "Unknown Product"
 
 
 class ProductCategory:
@@ -353,9 +372,9 @@ class ProductCategory:
         self.categories = [category for category in self.categories if category["category_id"] != category_id]
 
     def display_existing_category():
-        global product_category
+        global product_category, COLOR_HIGHLIGHT, COLOR_NORMAL
         print("-------------------------------------------------")
-        print("-- Current Product Categories")
+        print(COLOR_HIGHLIGHT + "-- Current Product Categories" + COLOR_NORMAL)
         print("-------------------------------------------------")
 
         # Check if there are any categories
@@ -373,6 +392,12 @@ class ProductCategory:
             row = "| {category_id:<15} | {category_name:<30} |".format(**category)
             print(row)
         print("-------------------------------------------------")
+
+    def lookup_category_name(self, category_id):
+            for category in self.categories:
+                if category['category_id'] == category_id:
+                    return category['category_name']
+            return "Uncategorized" 
 
 
 class UserDatabase:
@@ -409,12 +434,15 @@ class ShoppingCart:
 
     def add_product_to_cart(self, session_id, product_id, qty):
         product = next((item for item in product_catalogue.products if item["product_id"] == product_id), None)
+        print("-------------------------------------------------")
+
         if product:
+
             # Check if there is a product already placed in cart
             for item in self.cart:
                 if item["session_id"] == session_id and item["product_id"] == product_id:
                     item["quantity"] += qty
-                    print(f"Added {qty} more of {product['product_name']} to cart.")
+                    print(COLOR_ACTION + f"Added {qty} units more of {product['product_name']} to cart." + COLOR_NORMAL)
                     return
                 
             #  If this is a new item added to cart    
@@ -426,26 +454,34 @@ class ShoppingCart:
                 "product_price": product["product_price"]
             }
             self.cart.append(cart_item)
-            print(f"Added {qty} of {product['product_name']} to cart.")
+            print(COLOR_ACTION + f"Added {qty} units of {product['product_name']} to cart." + COLOR_NORMAL)
         else:
-            print("Product not found in catalogue.")
+            print(COLOR_ATTENTION + "Product not found in catalogue."+ COLOR_NORMAL)
+        print("-------------------------------------------------")
+
+        
 
     def remove_product_from_cart(self, session_id, product_id):
         self.cart = [item for item in self.cart if not (item["session_id"] == session_id and item["product_id"] == product_id)]
-        print("Product with ID {product_id} removed from cart.")
 
         
     def display_items_in_cart(self, session_id):
+        global COLOR_NORMAL, COLOR_ACTION, COLOR_HIGHLIGHT
 
 
         # Check if the cart is empty
         if not any(item['session_id'] == session_id for item in self.cart):
+            print(COLOR_ATTENTION + "-------------------------------------------------")
             print("-- Your cart is empty.")
+            print("-------------------------------------------------" + COLOR_NORMAL)
             return
 
         # Table headers
-        print("-- You have the following products added in your cart: ")
         header = "| {0:<36} | {1:<10} | {2:<30} | {3:<15} | {4:<10} |".format("Session ID", "Product ID", "Name", "Quantity", "Price")
+        print(COLOR_HIGHLIGHT)
+        print("-" * len(header))       
+        print("-- You have the following products added in your cart: " + COLOR_NORMAL)
+        print("-" * len(header))
         print(header)
         print("-" * len(header))
 
@@ -473,13 +509,13 @@ class PaymentGateway:
         ]
     def display_available_pgw(self):
         def display_available_pgw(self):
-            print("-------------------------------------------------")
+            print(COLOR_HIGHLIGHT + "-------------------------------------------------")
             print("-- Available Payment Gateways")
-            print("-------------------------------------------------")
+            print("-------------------------------------------------" + COLOR_NORMAL)
 
             # Check if there are any payment gateways available
             if not self.pgw:
-                print("No payment gateways available.")
+                print(COLOR_ATTENTION + "No payment gateways available.")
                 return
 
             # Table headers
@@ -494,16 +530,16 @@ class PaymentGateway:
             print("-------------------------------------------------")
 
     def checkout_by_visa_master(session_id, payment_amount):
-        print(f"Your payment link is generated. please open this link in browser to continue the payment")
-        print(f"https://www.visa-payment.com/pay.php?order={session_id}&amount={payment_amount}")    
+        print(COLOR_ATTENTION + f"Your payment link is generated. please open this link in browser to continue the payment")
+        print(COLOR_HIGHLIGHT + f"https://www.visa-payment.com/pay.php?order={session_id}&amount={payment_amount}")    
 
     def checkout_by_paypal(session_id, payment_amount):
-        print(f"Your  link is generated. Please continue to paypal.com to proceed payment")
-        print(f"https://www.paypal.com/pay.php?order={session_id}&amount={payment_amount}")    
+        print(COLOR_ATTENTION +f"Your  link is generated. Please continue to paypal.com to proceed payment")
+        print(COLOR_HIGHLIGHT + f"https://www.paypal.com/pay.php?order={session_id}&amount={payment_amount}")    
    
 
     def checkout_by_bitcoin(session_id, payment_amount):
-        print(f"You will soon receive an email at your registered email address. Please continue the payment from your cryptocurrency wallet")
+        print(COLOR_ATTENTION + f"You will soon receive an email at your registered email address. Please continue the payment from your cryptocurrency wallet with instructions in the email.")
    
 
 
