@@ -112,7 +112,7 @@ def display_admin_manage_product_menu():
             admin_add_product()
         elif option == '3':
             # Implement modify product functionality (not provided in script)
-            pass
+            admin_modify_product()
         elif option == '4':
             admin_remove_product()
         elif option.upper() == 'B':
@@ -141,8 +141,7 @@ def display_admin_manage_product_category():
         elif option == '2':
             admin_add_category()
         elif option == '3':
-            # Implement modify category functionality (not provided in script)
-            pass
+            admin_modify_category()
         elif option == '4':
             admin_remove_category()
         elif option.upper() == 'B':
@@ -160,6 +159,28 @@ def admin_add_category():
     product_category.add_category(category_id, category_name)
     print(f"Category '{category_name}' added.")
 
+def admin_modify_category():
+    product_category.display_existing_category()
+
+    while True:
+        try:
+            category_id_input = input("Enter the category ID you want to modify: ")
+            category_id = int(category_id_input)
+            break
+        except ValueError:
+            print("Invalid input. Please enter a numeric category ID.")
+
+    old_category_name = product_category.lookup_category_name(category_id)
+    if old_category_name == "Uncategorized":
+        print(f"Category ID {category_id} not found.")
+        return
+
+    new_category_name = input(f"Enter new category name for existing '{old_category_name}': ")
+    product_category.remove_category(category_id)
+    product_category.add_category(category_id, new_category_name)
+    print(f"Category ID '{category_id}' name is changed to '{new_category_name}'")
+
+
 def admin_remove_category():
     category_id = input("Enter category ID to remove: ")
     product_category.remove_category(category_id)
@@ -171,15 +192,42 @@ def admin_add_product():
     print("-- Admin Menu: Add New Product to Catalogue")
     print("-- Login Session ID: ", current_sessionid)
     print("-------------------------------------------------")
-    add_product_name = input("Please enter the new product name")
-    add_product_price = input("Please enter the price for new product ", add_product_name)
-    add_product_quantity = input("Please enter the the product available quantity")
+    add_product_name = input("Please enter the new product name: ")
+    add_product_price = input(f"Please enter the price for the new product '{add_product_name}' : ")
+    add_product_quantity = input(f"Please enter the '{add_product_name}' available quantity : ")
+
+    add_product_category = input(f"Please enter the category in which '{add_product_name}' belongs to : ")
 
 def admin_remove_product():
-    product_id = int(input("Enter product ID to remove: "))
+    product_catalogue.display_product_catalogue()
+    product_id = int(input("Enter product ID to remove from catalogue: "))
     product_catalogue.remove_product(product_id)
-    print(f"Product with ID {product_id} removed.")
 
+def admin_modify_product():
+    product_catalogue.display_product_catalogue()
+
+    product_id = int(input("Enter product ID to modify: "))
+
+    product = product_catalogue.lookup_product(product_id)
+
+    old_product_name = product["product_name"]
+
+
+    print(f"Modify Existing Product ID {product_id}, {old_product_name}")
+    old_product_price = product["product_price"]
+    old_category_id = product["category_id"]
+
+
+    new_product_name = input(f"Enter the new name for the product '{old_product_name}': ")
+    new_product_price = input(f"Enter the new price for the product '{old_product_price}': ")
+    old_category_name = product_category.lookup_category_name(old_category_id)
+    new_category_id = input(f"Enter a new category ID for the Product '{new_product_name}' : ")
+
+    product_catalogue.remove_product(product_id)
+    product_catalogue.add_product(product_id, new_product_name, new_category_id, new_product_price)
+    print(f"The product ID {product_id} is updated to the following: ")
+    print(f"Name : {new_product_name}, Price {new_product_price}, Category ID {new_category_id}, Category Name {product_category.lookup_category_name(new_category_id)} ")
+    
 
 ### Part C User Functions
 def display_user_menu():
@@ -354,6 +402,13 @@ class ProductCatalogue:
             return "Unknown Product"
 
 
+    def lookup_product(self, product_id):
+            for product in self.products:
+                if product['product_id'] == product_id:
+                    return product
+            return "Unknown Product"
+
+
 class ProductCategory:
     # Initialize Default Product Categories
     def __init__(self):
@@ -371,7 +426,22 @@ class ProductCategory:
     def remove_category(self, category_id):
         self.categories = [category for category in self.categories if category["category_id"] != category_id]
 
-    def display_existing_category():
+    def modify_category(self, category_id):
+        global product_category  
+        product_category.display_existing_category()
+        category_id = input("Enter the category ID you want to modify: ")
+        # Check if category exists
+        old_category_name = product_category.lookup_category_name(category_id)
+        if old_category_name == "Uncategorized":
+            print(f"Category ID {category_id} not found.")
+            return
+        new_category_name = input(f"Enter new category name for existing '{old_category_name}': ")
+        product_category.remove_category(category_id)
+        product_category.add_category(category_id, new_category_name)
+        print(f"Category ID '{category_id}' name is changed to '{new_category_name}'")
+
+
+    def display_existing_category(self):
         global product_category, COLOR_HIGHLIGHT, COLOR_NORMAL
         print("-------------------------------------------------")
         print(COLOR_HIGHLIGHT + "-- Current Product Categories" + COLOR_NORMAL)
