@@ -799,6 +799,8 @@ product_category = ProductCategory()
 user_database = UserDatabase()
 shopping_cart = ShoppingCart()
 pgw = PaymentGateway()
+
+##DEMO Shopping Cart Main Code
 def main():
     display_welcome_msg()
     display_login()
@@ -806,4 +808,5 @@ def main():
 
 
 #Execute Demo Marketplace Shopping Cart Program
-main()
+if __name__ == "__main__":
+    main()
