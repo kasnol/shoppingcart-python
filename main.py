@@ -175,18 +175,28 @@ def admin_display_existing_category():
     
 
 def admin_add_category():
-    print(COLOR_ADMIN_MENU + "-------------------------------------------------")
-    print("-- Admin Menu: Modify an existing Category")
-    print("-------------------------------------------------" + COLOR_NORMAL)
-    category_name = input("Enter new category name: ")
-    # Automatically assign the next available ID, similar to SQL autoincrement 
-    new_category_id = max(category['category_id'] for category in product_category.categories) + 1 if product_category.categories else 1
-    product_category.add_category(new_category_id, category_name)
-    print(COLOR_ACTION + f"New category '{category_name}' created with ID {new_category_id}." + COLOR_NORMAL)
-
-def admin_modify_category():
+    global product_category, COLOR_ATTENTION, COLOR_ACTION, COLOR_NORMAL
     print(COLOR_ADMIN_MENU + "-------------------------------------------------")
     print("-- Admin Menu: Add a New Category")
+    print("-------------------------------------------------" + COLOR_NORMAL)
+
+    while True:
+        category_name = input("Enter new category name: ").strip()
+        if category_name:
+            # Automatically assign the next available ID, similar to SQL autoincrement 
+            new_category_id = max(category['category_id'] for category in product_category.categories) + 1 if product_category.categories else 1
+            product_category.add_category(new_category_id, category_name)
+            print(COLOR_ACTION + f"New category '{category_name}' created with ID {new_category_id}." + COLOR_NORMAL)
+            break
+        else:
+            print(COLOR_ATTENTION + "Category name cannot be empty. Please enter a valid name." + COLOR_NORMAL)
+
+
+def admin_modify_category():
+    global product_category, COLOR_ATTENTION, COLOR_ACTION, COLOR_NORMAL
+
+    print(COLOR_ADMIN_MENU + "-------------------------------------------------")
+    print("-- Admin Menu: Modify an existing Category")
     print("-------------------------------------------------" + COLOR_NORMAL)
     product_category.display_existing_category()
 
@@ -200,14 +210,18 @@ def admin_modify_category():
 
     old_category_name = product_category.lookup_category_name(category_id)
     if old_category_name == "Uncategorized":
-        print(COLOR_ATTENTION + f"Category ID {category_id} not found."+COLOR_NORMAL)
+        print(COLOR_ATTENTION + f"Category ID {category_id} not found." + COLOR_NORMAL)
         return
-    
-    new_category_name = input(f"Enter new category name for existing '{old_category_name}': ")
-    product_category.remove_category(category_id)
-    product_category.add_category(category_id, new_category_name)
-    print(COLOR_ACTION + f"Category ID '{category_id}' name is changed to '{new_category_name}'" + COLOR_NORMAL)
 
+    while True:
+        new_category_name = input(f"Enter new category name for existing '{old_category_name}': ").strip()
+        if new_category_name:
+            product_category.remove_category(category_id)
+            product_category.add_category(category_id, new_category_name)
+            print(COLOR_ACTION + f"Category ID '{category_id}' name is changed to '{new_category_name}'" + COLOR_NORMAL)
+            break
+        else:
+            print(COLOR_ATTENTION + "Category name cannot be empty. Please enter a valid name." + COLOR_NORMAL)
 
 
 def admin_remove_category():
@@ -361,7 +375,7 @@ def display_user_menu():
     while True:
         print(COLOR_USER_MENU + "-------------------------------------------------")
         print("-- User Menu ")
-        print(f"-- Welcome " + COLOR_ATTENTION + f"{current_user['user_name']} " + COLOR_HIGHLIGHT + "!")
+        print(f"-- Welcome " + COLOR_ATTENTION + f"{current_user['user_name']} " + COLOR_USER_MENU + "!")
         print("-- Session ID: ", current_sessionid)
         print("-------------------------------------------------" + COLOR_NORMAL)
         print("Choose an option below: \n")
@@ -392,6 +406,9 @@ def display_user_menu():
             print(COLOR_ATTENTION + "Invalid option, please choose a number between 1 and 4" + COLOR_NORMAL)
 
 def user_add_product_to_cart(current_sessionid):
+    print(COLOR_USER_MENU + "-------------------------------------------------")
+    print("-- User: Add a Product to Cart from Catalogue ")
+    print("-------------------------------------------------" + COLOR_NORMAL)
     product_catalogue.display_product_catalogue()
     while True:  # Validation logic to force input is numeric & valid 
         try:
@@ -413,7 +430,9 @@ def user_add_product_to_cart(current_sessionid):
 
 
 def user_remove_product_from_cart(current_sessionid):
-
+    print(COLOR_USER_MENU + "-------------------------------------------------")
+    print("-- User: Remove a Product to Cart from Catalogue ")
+    print("-------------------------------------------------" + COLOR_NORMAL)
     # Check if the cart is empty
     if not any(item['session_id'] == current_sessionid for item in shopping_cart.cart):
         print(COLOR_ATTENTION + "-------------------------------------------------")
@@ -445,7 +464,8 @@ def initiate_checkout(session_id):
     # Check if the cart is empty
     if not any(item['session_id'] == session_id for item in shopping_cart.cart):
         print(COLOR_ATTENTION + "-------------------------------------------------")
-        print("-- Currently, there are no items in your cart. Please add products to your cart to perform checkout.")
+        print("-- Currently, there are no items in your cart.")
+        print("-- Please add products to your cart to perform checkout.")
         print("-------------------------------------------------" + COLOR_NORMAL)
         return
 
@@ -455,19 +475,22 @@ def initiate_checkout(session_id):
         print("-------------------------------------------------"+COLOR_NORMAL)
         shopping_cart.display_items_in_cart(session_id)
         invoice_total = shopping_cart.calculate_invoice(session_id)
-        print(COLOR_HIGHLIGHT + f"Total Amount in cart: {invoice_total}" + COLOR_NORMAL)
+        print(COLOR_ACTION + f"Total Amount in cart: ${invoice_total}" + COLOR_NORMAL)
 
         # Display available payment gateways
         pgw.display_available_pgw()
-        checkout_pgw = input(f"Please select your preferred payment method: (1 for VISA/MASTER, 2 for PAYPAL, 3 for BITCOIN PAYMENT) or 'B' to go back to previous menu: ")
-
+        checkout_pgw = input(f"Please select your preferred payment method: (1 for VISA/MASTER, 2 for PAYPAL, 3 for UPI, 4 for BITCOIN PAYMENT) or 'B' to go back to previous menu: ")
         if checkout_pgw.upper() == 'B':
             break  # Go back to the previous menu
         elif checkout_pgw == '1':
             PaymentGateway.checkout_by_visa_master(session_id, invoice_total)
         elif checkout_pgw == '2':
             PaymentGateway.checkout_by_paypal(session_id, invoice_total)
-        
+        elif checkout_pgw == '3':
+            PaymentGateway.checkout_by_upi(session_id, invoice_total)
+        elif checkout_pgw == '4':
+            PaymentGateway.checkout_by_bitcoin(session_id, invoice_total)
+
         print(COLOR_ACTION + "-------------------------------------------------")
         print("-- You will now be logout; thank you for placing the order !")
         print("-------------------------------------------------"+COLOR_NORMAL)
@@ -475,10 +498,6 @@ def initiate_checkout(session_id):
         sys.exit(0)
 
 ### Part D Shopping Cart Application classes
-
-
-
-
 
 class ProductCatalogue:
     # Initialize Default Product Catalogue
@@ -504,13 +523,24 @@ class ProductCatalogue:
 
     def display_product_catalogue(self):
         global COLOR_NORMAL, COLOR_ACTION, COLOR_HIGHLIGHT
+
+        #check if products exist in list first
+        if not self.products:
+            print(COLOR_ATTENTION + "No products available." + COLOR_NORMAL)
+            return
+
         header = "| {0:<10} | {1:<30} | {2:<20} | {3:<10} |".format("Product ID", "Product Name", "Category", "Price")
         print("-" * len(header))
         print(COLOR_HIGHLIGHT + "-- Current list of products in current product catalogue " + COLOR_NORMAL)
         print("-" * len(header))
         print(header)
         print("-" * len(header))
-        for product in self.products:
+
+        # Sort the products by product_id in ascending order first
+        sorted_products = sorted(self.products, key=lambda x: x['product_id'])
+
+
+        for product in sorted_products:
             category_name = product_category.lookup_category_name(product['category_id'])  # Lookup category name
             row = "| {product_id:<10} | {product_name:<30} | {category:<20} | {product_price:<10} |".format(
                 product_id=product['product_id'],
@@ -574,7 +604,7 @@ class ProductCategory:
 
         # Check if there are any categories
         if not product_category.categories:
-            print("No categories available.")
+            print(COLOR_ATTENTION + "No categories available." + COLOR_NORMAL)
             return
 
         # Table headers
@@ -582,8 +612,12 @@ class ProductCategory:
         print(header)
         print("-" * len(header))
 
+
+        # Sort the categories by category_id in ascending order
+        sorted_categories = sorted(self.categories, key=lambda x: x['category_id'])
+
         # Table rows
-        for category in product_category.categories:
+        for category in sorted_categories:
             row = "| {category_id:<15} | {category_name:<30} |".format(**category)
             print(row)
         print("-------------------------------------------------")
@@ -698,61 +732,51 @@ class PaymentGateway:
  # Initialize Default Options for payment Gateway
     def __init__(self):
         self.pgw = [
-            {"pgw_id": 1, "pgw_name": "VISA/MASTER"},
+            {"pgw_id": 1, "pgw_name": "NET BANKING VISA/MASTER"},
             {"pgw_id": 2, "pgw_name": "PAYPAL"},
-            {"pgw_id": 3, "pgw_name": "BITCOIN PAYMENT"},     
+            {"pgw_id": 3, "pgw_name": "UPI"},     
+            {"pgw_id": 4, "pgw_name": "BITCOIN PAYMENT"},     
         ]
     def display_available_pgw(self):
-        def display_available_pgw(self):
-            print(COLOR_HIGHLIGHT + "-------------------------------------------------")
-            print("-- Available Payment Gateways")
-            print("-------------------------------------------------" + COLOR_NORMAL)
+        print(COLOR_HIGHLIGHT + "-------------------------------------------------")
+        print("-- Available Payment Gateways")
+        print("-------------------------------------------------" + COLOR_NORMAL)
 
-            # Check if there are any payment gateways available
-            if not self.pgw:
-                print(COLOR_ATTENTION + "No payment gateways available.")
-                return
+        # Check if there are any payment gateways available
+        if not self.pgw:
+            print(COLOR_ATTENTION + "No payment gateways available.")
+            return
 
-            # Table headers
-            header = "| {0:<10} | {1:<30} |".format("Gateway ID", "Gateway Name")
-            print(header)
-            print("-" * len(header))
+        # Table headers
+        header = "| {0:<10} | {1:<30} |".format("Gateway ID", "Gateway Name")
+        print(header)
+        print("-" * len(header))
 
-            # Table rows
-            for gateway in self.pgw:
-                row = "| {pgw_id:<10} | {pgw_name:<30} |".format(**gateway)
-                print(row)
-            print("-------------------------------------------------")
+        # Table rows
+        for gateway in self.pgw:
+            row = "| {pgw_id:<10} | {pgw_name:<30} |".format(**gateway)
+            print(row)
+        print("-------------------------------------------------")
 
     def checkout_by_visa_master(session_id, payment_amount):
         print(COLOR_ATTENTION + f"Your payment link is generated. please open this link in browser to continue the payment")
-        print(COLOR_HIGHLIGHT + f"https://www.visa-payment.com/pay.php?order={session_id}&amount={payment_amount}")    
+        print(COLOR_ACTION + f"https://www.net-banking.com/pay.php?order={session_id}&amount={payment_amount}")    
 
     def checkout_by_paypal(session_id, payment_amount):
         print(COLOR_ATTENTION +f"Your  link is generated. Please continue to paypal.com to proceed payment")
-        print(COLOR_HIGHLIGHT + f"https://www.paypal.com/pay.php?order={session_id}&amount={payment_amount}")    
+        print(COLOR_ACTION + f"https://www.paypal.com/pay.php?order={session_id}&amount={payment_amount}")    
    
-
+    def checkout_by_upi(session_id, payment_amount):
+        print(COLOR_ATTENTION + f"You will soon receive an email at your registered email address. Please continue the payment amount of ${payment_amount} detailed in the email.")
+   
     def checkout_by_bitcoin(session_id, payment_amount):
-        print(COLOR_ATTENTION + f"You will soon receive an email at your registered email address. Please continue the payment from your cryptocurrency wallet with instructions in the email.")
+        print(COLOR_ATTENTION + f"You will soon receive an email at your registered email address. Please continue the payment amount of ${payment_amount} from your cryptocurrency wallet with instructions in the email.")
    
 
 
 #It is necessary to construct a sample product catalog with three to four product categories, such as Boots, Coats, Jackets, and Caps. 
 #The product id, name, category id, and price should all be present for each item in the dummy database of the catalog. 
 #Both users and administrators can view the catalog.
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 ## Part E Program Execution
