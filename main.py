@@ -9,7 +9,7 @@ current_sessionid = None
 # ANSI escape codes for some color output
 COLOR_ATTENTION = '\033[91m' # Color for Errors / Issues
 COLOR_HIGHLIGHT = '\033[92m' # Color for highlight certain wordings
-COLOR_ACTION = '\033[22m' # Color for for actions done
+COLOR_ACTION = '\033[33m' # Color for for actions done
 COLOR_NORMAL = '\033[0m'  # Normal Color 
 COLOR_ADMIN_MENU = '\033[93m' # Admin Menu Colors
 COLOR_USER_MENU = '\033[36m' # User Menu Colors
@@ -259,6 +259,9 @@ def admin_add_product():
     print("-------------------------------------------------" + COLOR_NORMAL)
 
     add_product_name = input("Please enter the new product name: ")
+    if not add_product_name:
+        print(COLOR_ATTENTION + "Product name cannot be empty." + COLOR_NORMAL)
+        return  # Return to the previous menu
 
     while True:
         try:
@@ -490,7 +493,9 @@ def initiate_checkout(session_id):
             PaymentGateway.checkout_by_upi(session_id, invoice_total)
         elif checkout_pgw == '4':
             PaymentGateway.checkout_by_bitcoin(session_id, invoice_total)
-
+        else:
+            print(COLOR_ATTENTION + "Invalid input. Please select a valid payment method or press 'B' to go back." + COLOR_NORMAL)
+            
         print(COLOR_ACTION + "-------------------------------------------------")
         print("-- You will now be logout; thank you for placing the order !")
         print("-------------------------------------------------"+COLOR_NORMAL)
@@ -706,20 +711,25 @@ class ShoppingCart:
             return
 
         # Table headers
-        header = "| {0:<36} | {1:<10} | {2:<30} | {3:<15} | {4:<10} |".format("Session ID", "Product ID", "Name", "Quantity", "Price")
+        header = "| {0:<36} | {1:<10} | {2:<30} | {3:<15} | {4:<10} |".format("Session ID", "Product ID", "Name", "Quantity", "Price $")
         print(COLOR_HIGHLIGHT)
         print("-" * len(header))       
         print("-- You have the following products added in your cart: " + COLOR_NORMAL)
         print("-" * len(header))
         print(header)
         print("-" * len(header))
-
+        
+        #calculate subtotal of the shopping cart
+        subtotal = 0
         # Updated table rows to include Session ID
         for item in self.cart:
             if item['session_id'] == session_id:
                 row = "| {session_id:<36} | {product_id:<10} | {product_name:<30} | {quantity:<15} | {product_price:<10} |".format(**item)
                 print(row)
+                subtotal += item['quantity'] * item['product_price']
+
         print("-" * len(header))
+        print(COLOR_ACTION + f"Subtotal: ${subtotal}" + COLOR_NORMAL)
 
     def calculate_invoice(self, session_id):
         total_cost = 0
