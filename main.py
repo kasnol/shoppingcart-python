@@ -7,21 +7,22 @@ current_user = None
 current_sessionid = None
 
 # ANSI escape codes for some color output
-COLOR_ATTENTION = '\033[91m'
-COLOR_HIGHLIGHT = '\033[92m'
-COLOR_ACTION = '\033[91m'
-COLOR_NORMAL = '\033[0m'  
+COLOR_ATTENTION = '\033[91m' # Color for Errors / Issues
+COLOR_HIGHLIGHT = '\033[92m' # Color for highlight certain wordings
+COLOR_ACTION = '\033[22m' # Color for for actions done
+COLOR_NORMAL = '\033[0m'  # Normal Color 
+COLOR_ADMIN_MENU = '\033[93m' # Admin Menu Colors
+COLOR_USER_MENU = '\033[36m' # User Menu Colors
 
 
 ### Part A Shopping Cart General Functions
-#   A welcome message should initially be displayed in the e-commerce application, such as "Welcome to the Demo Marketplace".
 
 def get_user_attribute(attribute):
     global current_user
     return current_user[attribute]
 
 
-
+#   A welcome message should initially be displayed in the e-commerce application, such as "Welcome to the Demo Marketplace".
 def display_welcome_msg():
     global current_sessionid, COLOR_ATTENTION, COLOR_HIGHLIGHT, COLOR_NORMAL
     print(COLOR_HIGHLIGHT + "-------------------------------------------------")
@@ -67,10 +68,10 @@ def lookup_user(username, password):
 ### Part B Admin Functions
 def display_admin_menu():
     global current_sessionid, COLOR_ATTENTION, COLOR_HIGHLIGHT, COLOR_NORMAL
-    print("-------------------------------------------------")
+    print(COLOR_ADMIN_MENU + "-------------------------------------------------")
     print("-- Admin Menu")
     print("-- Login Session ID: ", current_sessionid)
-    print("-------------------------------------------------")
+    print("-------------------------------------------------"+COLOR_NORMAL)
     
     while True:
         print("-- Choose an option below: \n")
@@ -85,18 +86,18 @@ def display_admin_menu():
         elif option == '2':
             display_admin_manage_product_category()
         elif option.upper() == 'Q':
-            print("Logging out...")
+            print(COLOR_ACTION + "Logging out, bye !")
             break
         else:
-            print("Invalid option. Please enter a valid option (1-3):")
+            print(COLOR_ATTENTION + "Invalid option. Please enter a valid option (1-3)" + COLOR_NORMAL)
 
 def display_admin_manage_product_menu():
     global current_sessionid, COLOR_ATTENTION, COLOR_HIGHLIGHT, COLOR_NORMAL
     while True:
-        print("-------------------------------------------------")
+        print(COLOR_ADMIN_MENU + "-------------------------------------------------")
         print("-- Admin: Manage Product Catalogue")
         print("-- Login Session ID: ", current_sessionid)
-        print("-------------------------------------------------")
+        print("-------------------------------------------------"+COLOR_NORMAL)
         print("-- Choose an option below: \n")
         print("-- 1. Display Current Products in Catalogue ")
         print("-- 2. Add New Product to Catalogue ")
@@ -118,15 +119,15 @@ def display_admin_manage_product_menu():
         elif option.upper() == 'B':
             break
         else:
-            print("Invalid option. Please enter a valid option (1-4 or B)")
+            print(COLOR_ATTENTION + "Invalid option. Please enter a valid option (1-4 or B)" + COLOR_NORMAL)
 
 def display_admin_manage_product_category():
     global current_sessionid, COLOR_ATTENTION, COLOR_HIGHLIGHT, COLOR_NORMAL
     while True:
-        print("-------------------------------------------------")
+        print(COLOR_ADMIN_MENU + "-------------------------------------------------")
         print("-- Admin: Manage Product Category")
         print("-- Login Session ID: ", current_sessionid)
-        print("-------------------------------------------------")
+        print("-------------------------------------------------"+COLOR_NORMAL)
         print("-- Choose an option below: \n")
         print("-- 1. Display Current Product Categories ")
         print("-- 2. Add a New Category ")
@@ -137,7 +138,6 @@ def display_admin_manage_product_category():
         option = input("Enter your option (1-4 or B): ")
         if option == '1':
             product_category.display_existing_category()
-            pass
         elif option == '2':
             admin_add_category()
         elif option == '3':
@@ -147,19 +147,47 @@ def display_admin_manage_product_category():
         elif option.upper() == 'B':
             break
         else:
-            print("Invalid choice. Please enter a valid option.")
+            print(COLOR_ATTENTION + "Invalid choice. Please enter a valid option." + COLOR_NORMAL)
 
 
 def admin_display_existing_category():
-    pass            
+    global product_category, COLOR_HIGHLIGHT, COLOR_NORMAL
+
+    print(COLOR_HIGHLIGHT + "-------------------------------------------------")
+    print("-- Current Product Categories")
+    print("-------------------------------------------------" + COLOR_NORMAL)
+
+    # Check if there are any categories
+    if not product_category.categories:
+        print(COLOR_ATTENTION + "No categories available." + COLOR_NORMAL)
+        return
+
+    # Table headers
+    header = "| {0:<15} | {1:<30} |".format("Category ID", "Category Name")
+    print(header)
+    print("-" * len(header))
+
+    # Table rows
+    for category in product_category.categories:
+        row = "| {category_id:<15} | {category_name:<30} |".format(**category)
+        print(row)
+    print("-------------------------------------------------")
+    
 
 def admin_add_category():
-    category_id = input("Enter new category ID: ")
+    print(COLOR_ADMIN_MENU + "-------------------------------------------------")
+    print("-- Admin Menu: Modify an existing Category")
+    print("-------------------------------------------------" + COLOR_NORMAL)
     category_name = input("Enter new category name: ")
-    product_category.add_category(category_id, category_name)
-    print(f"Category '{category_name}' added.")
+    # Automatically assign the next available ID, similar to SQL autoincrement 
+    new_category_id = max(category['category_id'] for category in product_category.categories) + 1 if product_category.categories else 1
+    product_category.add_category(new_category_id, category_name)
+    print(COLOR_ACTION + f"New category '{category_name}' created with ID {new_category_id}." + COLOR_NORMAL)
 
 def admin_modify_category():
+    print(COLOR_ADMIN_MENU + "-------------------------------------------------")
+    print("-- Admin Menu: Add a New Category")
+    print("-------------------------------------------------" + COLOR_NORMAL)
     product_category.display_existing_category()
 
     while True:
@@ -168,72 +196,170 @@ def admin_modify_category():
             category_id = int(category_id_input)
             break
         except ValueError:
-            print("Invalid input. Please enter a numeric category ID.")
+            print(COLOR_ATTENTION + "Invalid input. Please enter a numeric category ID." + COLOR_NORMAL)
 
     old_category_name = product_category.lookup_category_name(category_id)
     if old_category_name == "Uncategorized":
-        print(f"Category ID {category_id} not found.")
+        print(COLOR_ATTENTION + f"Category ID {category_id} not found."+COLOR_NORMAL)
         return
-
+    
     new_category_name = input(f"Enter new category name for existing '{old_category_name}': ")
     product_category.remove_category(category_id)
     product_category.add_category(category_id, new_category_name)
-    print(f"Category ID '{category_id}' name is changed to '{new_category_name}'")
+    print(COLOR_ACTION + f"Category ID '{category_id}' name is changed to '{new_category_name}'" + COLOR_NORMAL)
+
 
 
 def admin_remove_category():
-    category_id = input("Enter category ID to remove: ")
-    product_category.remove_category(category_id)
-    print(f"Category with ID {category_id} removed.")
+    global product_category, COLOR_ATTENTION, COLOR_ACTION, COLOR_NORMAL
+    print(COLOR_ADMIN_MENU + "-------------------------------------------------")
+    print("-- Admin Menu: Remove an existing Category")
+    print("-------------------------------------------------" + COLOR_NORMAL)
+    while True:
+
+        product_category.display_existing_category()
+
+        category_id_input = input("Enter category ID to remove (or 'B' to go back to previous menu): ")
+
+        if category_id_input.upper() == 'B':
+            print(COLOR_ACTION + "Go back to previous menu." + COLOR_NORMAL)
+            break
+
+        try:
+            category_id = int(category_id_input)
+            if any(category['category_id'] == category_id for category in product_category.categories):
+                product_category.remove_category(category_id)
+                print(COLOR_HIGHLIGHT + f"Category ID {category_id} has been removed." + COLOR_NORMAL)
+                break
+            else:
+                print(COLOR_ATTENTION + f"Category ID {category_id} not found." + COLOR_NORMAL)
+        except ValueError:
+            print(COLOR_ATTENTION + "Invalid input. Please enter a numeric category ID." + COLOR_NORMAL)
 
 def admin_add_product():
-    global current_sessionid, COLOR_ATTENTION, COLOR_HIGHLIGHT, COLOR_NORMAL
-    print("-------------------------------------------------")
+    global current_sessionid, COLOR_ATTENTION, COLOR_HIGHLIGHT, COLOR_NORMAL, product_catalogue, product_category
+
+    print(COLOR_ADMIN_MENU + "-------------------------------------------------")
     print("-- Admin Menu: Add New Product to Catalogue")
     print("-- Login Session ID: ", current_sessionid)
-    print("-------------------------------------------------")
-    add_product_name = input("Please enter the new product name: ")
-    add_product_price = input(f"Please enter the price for the new product '{add_product_name}' : ")
-    add_product_quantity = input(f"Please enter the '{add_product_name}' available quantity : ")
+    print("-------------------------------------------------" + COLOR_NORMAL)
 
-    add_product_category = input(f"Please enter the category in which '{add_product_name}' belongs to : ")
+    add_product_name = input("Please enter the new product name: ")
+
+    while True:
+        try:
+            add_product_price = float(input(f"Please enter the price for the new product '{add_product_name}': "))
+            break
+        except ValueError:
+            print(COLOR_ATTENTION + "Invalid input. Please enter a numeric value for the price." + COLOR_NORMAL)
+
+    while True:
+        product_category.display_existing_category()
+        add_product_category = input(f"Please enter the category ID in which '{add_product_name}' belongs to: ")
+        try:
+            add_product_category = int(add_product_category)
+            if any(category['category_id'] == add_product_category for category in product_category.categories):
+                break
+            else:
+                print(COLOR_ATTENTION + f"Category ID {add_product_category} not found." + COLOR_NORMAL)
+        except ValueError:
+            print(COLOR_ATTENTION+"Invalid input. Please enter a numeric category ID."+COLOR_NORMAL)
+    
+    # Generating new product ID, using maximum product id of current product id + 1, simulate SQL DB AUTO_INCREMENT logic
+    new_product_id = max(product['product_id'] for product in product_catalogue.products) + 1
+
+    product_catalogue.add_product(new_product_id, add_product_name, add_product_category, add_product_price)
+
+    print(COLOR_ACTION + f"The product ID {new_product_id} is added to the following: " + COLOR_NORMAL)
+    print(COLOR_ACTION + f"Product Name : {add_product_name}, Product Price {add_product_price}, Product Category ID {add_product_category}, Category Name: {product_category.lookup_category_name(add_product_category)} " + COLOR_NORMAL)
+
+
 
 def admin_remove_product():
-    product_catalogue.display_product_catalogue()
-    product_id = int(input("Enter product ID to remove from catalogue: "))
-    product_catalogue.remove_product(product_id)
+    global product_catalogue, COLOR_ATTENTION, COLOR_HIGHLIGHT, COLOR_NORMAL
+
+    while True:
+        print(COLOR_ADMIN_MENU + "-------------------------------------------------")
+        print("-- Admin: Remove Existing Product from Catalogue")
+        print("-------------------------------------------------" + COLOR_NORMAL)
+
+        product_catalogue.display_product_catalogue()
+
+        product_id_input = input("Enter product ID to remove from catalogue (or 'B' to go back to previous menu): ")
+
+        if product_id_input.upper() == 'B':
+            print(COLOR_ACTION + "Go back to previous menu." + COLOR_NORMAL)
+            break
+
+        try:
+            product_id = int(product_id_input)
+            product = product_catalogue.lookup_product(product_id)
+            if product != "Unknown Product":
+                product_catalogue.remove_product(product_id)
+                print(COLOR_ACTION + f"Product ID {product_id} has been removed from catalogue." + COLOR_NORMAL)
+                break
+            else:
+                print(COLOR_ATTENTION + f"Product ID {product_id} not found in catalogue." + COLOR_NORMAL)
+        except ValueError:
+            print(COLOR_ATTENTION + "Invalid input. Please enter a numeric product ID." + COLOR_NORMAL)
 
 def admin_modify_product():
-    product_catalogue.display_product_catalogue()
+    global product_catalogue, product_category, COLOR_ATTENTION, COLOR_ACTION, COLOR_NORMAL
 
-    product_id = int(input("Enter product ID to modify: "))
+    while True:
+        print(COLOR_ADMIN_MENU + "-------------------------------------------------")
+        print("-- Admin: Modify Existing Product in Catalogue")
+        print("-------------------------------------------------" + COLOR_NORMAL)
 
-    product = product_catalogue.lookup_product(product_id)
+        product_catalogue.display_product_catalogue()
 
-    old_product_name = product["product_name"]
+        product_id_input = input("Enter product ID to modify (or 'B' to go back to previous menu): ")
 
+        if product_id_input.upper() == 'B':
+            print(COLOR_ACTION + "Go back to previous menu." + COLOR_NORMAL)
+            break  # Exit the function to return to the previous menu
 
-    print(f"Modify Existing Product ID {product_id}, {old_product_name}")
-    old_product_price = product["product_price"]
-    old_category_id = product["category_id"]
+        try:
+            product_id = int(product_id_input)
+            product = product_catalogue.lookup_product(product_id)
+            if product != "Unknown Product":
+                old_product_name = product["product_name"]
+                new_product_name = input(f"Enter the new name for the product '{old_product_name}': ")
 
+                while True:
+                    try:
+                        new_product_price = float(input(f"Enter the new price for the product '{old_product_name}': "))
+                        break
+                    except ValueError:
+                        print(COLOR_ATTENTION + "Invalid input. Please enter a numeric value for the price." + COLOR_NORMAL)
 
-    new_product_name = input(f"Enter the new name for the product '{old_product_name}': ")
-    new_product_price = input(f"Enter the new price for the product '{old_product_price}': ")
-    old_category_name = product_category.lookup_category_name(old_category_id)
-    new_category_id = input(f"Enter a new category ID for the Product '{new_product_name}' : ")
+                while True:
+                    product_category.display_existing_category()
+                    new_category_id_input = input(f"Enter the category ID for this Product '{new_product_name}': ")
+                    try:
+                        new_category_id = int(new_category_id_input)
+                        if any(category['category_id'] == new_category_id for category in product_category.categories):
+                            product_catalogue.remove_product(product_id)
+                            product_catalogue.add_product(product_id, new_product_name, new_category_id, new_product_price)
+                            print(COLOR_ACTION + f"The product ID {product_id} is updated to the following: " + COLOR_NORMAL)
+                            print(COLOR_ACTION + f"Name: {new_product_name}, Price: {new_product_price}, Category ID: {new_category_id}, Category Name: {product_category.lookup_category_name(new_category_id)} " + COLOR_NORMAL)
+                            break  # Exit the inner loop after successful modification
+                        else:
+                            print(COLOR_ATTENTION + f"Category ID {new_category_id} not found." + COLOR_NORMAL)
+                    except ValueError:
+                        print(COLOR_ATTENTION + "Invalid input. Please enter a numeric category ID." + COLOR_NORMAL)
+                break  # Exit the function to return to the previous menu after successful modification
+            else:
+                print(COLOR_ATTENTION + f"Product ID {product_id} not found in catalogue." + COLOR_NORMAL)
+        except ValueError:
+            print(COLOR_ATTENTION + "Invalid input. Please enter a numeric product ID." + COLOR_NORMAL)
 
-    product_catalogue.remove_product(product_id)
-    product_catalogue.add_product(product_id, new_product_name, new_category_id, new_product_price)
-    print(f"The product ID {product_id} is updated to the following: ")
-    print(f"Name : {new_product_name}, Price {new_product_price}, Category ID {new_category_id}, Category Name {product_category.lookup_category_name(new_category_id)} ")
-    
 
 ### Part C User Functions
 def display_user_menu():
     global current_sessionid, COLOR_ATTENTION, COLOR_HIGHLIGHT, COLOR_NORMAL
     while True:
-        print(COLOR_HIGHLIGHT + "-------------------------------------------------")
+        print(COLOR_USER_MENU + "-------------------------------------------------")
         print("-- User Menu ")
         print(f"-- Welcome " + COLOR_ATTENTION + f"{current_user['user_name']} " + COLOR_HIGHLIGHT + "!")
         print("-- Session ID: ", current_sessionid)
@@ -260,10 +386,10 @@ def display_user_menu():
             initiate_checkout(current_sessionid)
         elif option.upper() == 'Q':
             current_sessionid = None
-            print("Logging out now, see you next time !")
+            print(COLOR_ACTION + "Logging out now, see you next time !" + COLOR_NORMAL)
             break
         else:
-            print("Invalid option, please choose a number between 1 and 4")
+            print(COLOR_ATTENTION + "Invalid option, please choose a number between 1 and 4" + COLOR_NORMAL)
 
 def user_add_product_to_cart(current_sessionid):
     product_catalogue.display_product_catalogue()
@@ -273,7 +399,7 @@ def user_add_product_to_cart(current_sessionid):
             product_id = int(product_id_input)
             break 
         except ValueError:
-            print("Invalid input. Please enter a numeric product id.")
+            print(COLOR_ATTENTION + "Invalid input. Please enter a numeric product id." + COLOR_NORMAL)
 
     while True: # Validation logic to force input is numeric & valid 
         try:
@@ -281,7 +407,7 @@ def user_add_product_to_cart(current_sessionid):
             product_qty = int(product_qty_input)
             break  # Exit loop if input is valid (numeric)
         except ValueError:
-            print("Invalid input. Please enter a numeric quantity to add to cart.")
+            print(COLOR_ATTENTION + "Invalid input. Please enter a numeric quantity to add to cart." + COLOR_NORMAL)
 
     shopping_cart.add_product_to_cart(current_sessionid, product_id, product_qty)
 
@@ -324,16 +450,16 @@ def initiate_checkout(session_id):
         return
 
     while True:
-        print("-------------------------------------------------")
-        print("--" + COLOR_HIGHLIGHT + " User: Checkout Shopping Cart " + COLOR_NORMAL)
-        print("-------------------------------------------------")
+        print(COLOR_USER_MENU + "-------------------------------------------------")
+        print("-- User: Checkout Shopping Cart " + COLOR_NORMAL)
+        print("-------------------------------------------------"+COLOR_NORMAL)
         shopping_cart.display_items_in_cart(session_id)
         invoice_total = shopping_cart.calculate_invoice(session_id)
         print(COLOR_HIGHLIGHT + f"Total Amount in cart: {invoice_total}" + COLOR_NORMAL)
 
         # Display available payment gateways
         pgw.display_available_pgw()
-        checkout_pgw = input(f"Please select your preferred payment method: (1 for VISA/MASTER, 2 for PAYPAL, 3 for BITCOIN PAYMENT) or 'B' to go back: ")
+        checkout_pgw = input(f"Please select your preferred payment method: (1 for VISA/MASTER, 2 for PAYPAL, 3 for BITCOIN PAYMENT) or 'B' to go back to previous menu: ")
 
         if checkout_pgw.upper() == 'B':
             break  # Go back to the previous menu
@@ -342,9 +468,9 @@ def initiate_checkout(session_id):
         elif checkout_pgw == '2':
             PaymentGateway.checkout_by_paypal(session_id, invoice_total)
         
-        print("-------------------------------------------------")
-        print("You will now be logout; thank you for placing the order !")
-        print("-------------------------------------------------")
+        print(COLOR_ACTION + "-------------------------------------------------")
+        print("-- You will now be logout; thank you for placing the order !")
+        print("-------------------------------------------------"+COLOR_NORMAL)
         current_sessionid = None
         sys.exit(0)
 
@@ -367,9 +493,9 @@ class ProductCatalogue:
 
     def add_product(self, product_id, product_name, category_id, product_price):
         self.products.append({
-            "product_id": product_id,
+            "product_id": int(product_id),
             "product_name": product_name,
-            "category_id": category_id,
+            "category_id": int(category_id),
             "product_price": product_price
         })
 
@@ -378,11 +504,10 @@ class ProductCatalogue:
 
     def display_product_catalogue(self):
         global COLOR_NORMAL, COLOR_ACTION, COLOR_HIGHLIGHT
-        header = "| {0:<10} | {1:<30} | {2:<20} | {3:<10} |".format("Product ID", "Product Name", "Category ID", "Price")
+        header = "| {0:<10} | {1:<30} | {2:<20} | {3:<10} |".format("Product ID", "Product Name", "Category", "Price")
         print("-" * len(header))
         print(COLOR_HIGHLIGHT + "-- Current list of products in current product catalogue " + COLOR_NORMAL)
         print("-" * len(header))
-        header = "| {0:<10} | {1:<30} | {2:<20} | {3:<10} |".format("Product ID", "Product Name", "Category", "Price")
         print(header)
         print("-" * len(header))
         for product in self.products:
@@ -401,7 +526,7 @@ class ProductCatalogue:
                     return product['product_name']
             return "Unknown Product"
 
-
+    #return whole product class 
     def lookup_product(self, product_id):
             for product in self.products:
                 if product['product_id'] == product_id:
@@ -433,19 +558,19 @@ class ProductCategory:
         # Check if category exists
         old_category_name = product_category.lookup_category_name(category_id)
         if old_category_name == "Uncategorized":
-            print(f"Category ID {category_id} not found.")
+            print(COLOR_ATTENTION + f"Category ID {category_id} not found." + COLOR_NORMAL)
             return
         new_category_name = input(f"Enter new category name for existing '{old_category_name}': ")
         product_category.remove_category(category_id)
         product_category.add_category(category_id, new_category_name)
-        print(f"Category ID '{category_id}' name is changed to '{new_category_name}'")
+        print(COLOR_ACTION + f"Category ID '{category_id}' name is changed to '{new_category_name}'"+COLOR_NORMAL)
 
 
     def display_existing_category(self):
         global product_category, COLOR_HIGHLIGHT, COLOR_NORMAL
-        print("-------------------------------------------------")
-        print(COLOR_HIGHLIGHT + "-- Current Product Categories" + COLOR_NORMAL)
-        print("-------------------------------------------------")
+        print(COLOR_HIGHLIGHT + "-------------------------------------------------")
+        print("-- Current Product Categories" )
+        print("-------------------------------------------------"+ COLOR_NORMAL)
 
         # Check if there are any categories
         if not product_category.categories:
