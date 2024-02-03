@@ -1,4 +1,4 @@
-import uuid, sys
+import uuid
 
 
 # Global Variables
@@ -15,12 +15,7 @@ COLOR_ADMIN_MENU = '\033[96m' # Admin Menu Colors
 COLOR_USER_MENU = '\033[36m' # User Menu Colors
 
 
-### Part A Shopping Cart General Functions
-
-def get_user_attribute(attribute):
-    global current_user
-    return current_user[attribute]
-
+### Part A Shopping Cart Login Functions
 
 #   A welcome message should initially be displayed in the e-commerce application, such as "Welcome to the Demo Marketplace".
 def display_welcome_msg():
@@ -29,7 +24,7 @@ def display_welcome_msg():
     print("-- Welcome to the Demo Marketplace             --")
     print("------------------------------------------------- \n"  + COLOR_NORMAL)
 
-    
+#   User Login Prompts  
 def display_login():
     global current_user, current_shoppingcart, current_sessionid
 
@@ -50,12 +45,17 @@ def display_login():
             print(COLOR_ATTENTION + "Wrong username or password combination" + COLOR_NORMAL)
             print("------------------------------------------------- \n")
 
+#   A common function to get user details after login
+def get_user_attribute(attribute):
+    global current_user
+    return current_user[attribute]
 
-# For simplicity, use system generated UUID as session ID
+
+#   A common function for Session ID generation, for simplicity, use system generated UUID as session ID
 def create_login_sessionid():
         return str(uuid.uuid4())
 
-
+#   A common function to authen users for login
 def lookup_user(username, password):
     for user in user_database.users:  
         if user['user_name'] == username and user['user_password'] == password:
@@ -64,16 +64,22 @@ def lookup_user(username, password):
 
 
 
-
 ### Part B Admin Functions
+
+#   Admin User Main Menu
 def display_admin_menu():
-    global current_sessionid, COLOR_ATTENTION, COLOR_HIGHLIGHT, COLOR_NORMAL
-    print(COLOR_ADMIN_MENU + "-------------------------------------------------")
-    print("-- Admin Menu")
-    print("-- Login Session ID: ", current_sessionid)
-    print("-------------------------------------------------"+COLOR_NORMAL)
-    
-    while True:
+    global current_sessionid, COLOR_ATTENTION, COLOR_HIGHLIGHT, COLOR_NORMAL, current_user
+
+# make sure the user is a valid user, and role is admin
+    if not current_user or current_user['user_role'] != 'A':
+        print(COLOR_ATTENTION + "Your Access is denied. You must be an admin to access this menu." + COLOR_NORMAL)
+        return  # Exit the function if the user is not an admin
+
+    while current_user:
+        print(COLOR_ADMIN_MENU + "-------------------------------------------------")
+        print("-- Admin Menu")
+        print("-- Login Session ID: ", current_sessionid)
+        print("-------------------------------------------------"+COLOR_NORMAL)
         print("-- Choose an option below: \n")
         print("-- 1. Manage Product Catalogue ")
         print("-- 2. Manage Product Category ")
@@ -86,11 +92,14 @@ def display_admin_menu():
         elif option == '2':
             display_admin_manage_product_category()
         elif option.upper() == 'Q':
-            print(COLOR_ACTION + "Logging out, bye !")
+            print(COLOR_ACTION + "Logging out now, see you next time !" + COLOR_NORMAL)
+            current_sessionid = None
+            current_user = None  
             break
         else:
             print(COLOR_ATTENTION + "Invalid option. Please enter a valid option (1-2, or 'Q')" + COLOR_NORMAL)
 
+# Admin Manage Product & Menu
 def display_admin_manage_product_menu():
     global current_sessionid, COLOR_ATTENTION, COLOR_HIGHLIGHT, COLOR_NORMAL
     while True:
@@ -121,6 +130,7 @@ def display_admin_manage_product_menu():
         else:
             print(COLOR_ATTENTION + "Invalid option. Please enter a valid option (1-4, or 'B')" + COLOR_NORMAL)
 
+#   Admin Manage Product Category & Menu
 def display_admin_manage_product_category():
     global current_sessionid, COLOR_ATTENTION, COLOR_HIGHLIGHT, COLOR_NORMAL
     while True:
@@ -149,7 +159,7 @@ def display_admin_manage_product_category():
         else:
             print(COLOR_ATTENTION + "Invalid option. Please enter a valid option (1-4, or 'B')" + COLOR_NORMAL)
 
-
+#   Admin: Common function to display current list of category
 def admin_display_existing_category():
     global product_category, COLOR_HIGHLIGHT, COLOR_NORMAL
 
@@ -173,7 +183,7 @@ def admin_display_existing_category():
         print(row)
     print("-------------------------------------------------")
     
-
+#   Admin: function to add a new category
 def admin_add_category():
     global product_category, COLOR_ATTENTION, COLOR_ACTION, COLOR_NORMAL
     print(COLOR_ADMIN_MENU + "-------------------------------------------------")
@@ -191,7 +201,7 @@ def admin_add_category():
         else:
             print(COLOR_ATTENTION + "Category name cannot be empty. Please enter a valid name." + COLOR_NORMAL)
 
-
+#   Admin: function to modify existing category
 def admin_modify_category():
     global product_category, COLOR_ATTENTION, COLOR_ACTION, COLOR_NORMAL
 
@@ -223,7 +233,7 @@ def admin_modify_category():
         else:
             print(COLOR_ATTENTION + "Category name cannot be empty. Please enter a valid name." + COLOR_NORMAL)
 
-
+#   Admin: function to remove existing category
 def admin_remove_category():
     global product_category, COLOR_ATTENTION, COLOR_ACTION, COLOR_NORMAL
     print(COLOR_ADMIN_MENU + "-------------------------------------------------")
@@ -250,6 +260,7 @@ def admin_remove_category():
         except ValueError:
             print(COLOR_ATTENTION + "Invalid input. Please enter a numeric category ID." + COLOR_NORMAL)
 
+#   Admin: function to add a new product
 def admin_add_product():
     global current_sessionid, COLOR_ATTENTION, COLOR_HIGHLIGHT, COLOR_NORMAL, product_catalogue, product_category
 
@@ -294,7 +305,7 @@ def admin_add_product():
     print(COLOR_ACTION + f"Product Name : {add_product_name}, Product Price: ${add_product_price}, Product Category ID: {add_product_category}, Category Name: {product_category.lookup_category_name(add_product_category)} " + COLOR_NORMAL)
 
 
-
+#   Admin: function to remove existing product
 def admin_remove_product():
     global product_catalogue, COLOR_ATTENTION, COLOR_HIGHLIGHT, COLOR_NORMAL
 
@@ -323,6 +334,7 @@ def admin_remove_product():
         except ValueError:
             print(COLOR_ATTENTION + "Invalid input. Please enter a numeric product ID." + COLOR_NORMAL)
 
+#   Admin: function to modify existing product
 def admin_modify_product():
     global product_catalogue, product_category, COLOR_ATTENTION, COLOR_ACTION, COLOR_NORMAL
 
@@ -383,10 +395,16 @@ def admin_modify_product():
             print(COLOR_ATTENTION + "Invalid input. Please enter a numeric product ID." + COLOR_NORMAL)
 
 
-### Part C User Functions
+### Part C User Shoppping Cart Functions
+            
+#   User: Shopping Cart User Main Menu & Functions
+
 def display_user_menu():
-    global current_sessionid, COLOR_ATTENTION, COLOR_HIGHLIGHT, COLOR_NORMAL
-    while True:
+    global current_sessionid, COLOR_ATTENTION, COLOR_HIGHLIGHT, COLOR_NORMAL, current_user
+    # Check if user is login
+    if not current_user:  
+        return
+    while current_user:
         print(COLOR_USER_MENU + "-------------------------------------------------")
         print("-- User Menu ")
         print(f"-- Welcome " + COLOR_ATTENTION + f"{current_user['user_name']} " + COLOR_USER_MENU + "!")
@@ -400,7 +418,7 @@ def display_user_menu():
         print("   5. Checkout ")
         print("   Q. Logout and quit")
         print("\n")
-        option = input("Enter your option (1-4, or 'Q'): ")
+        option = input("Enter your option (1-5, or 'Q'): ")
 
         if option == '1':
             product_catalogue.display_product_catalogue()
@@ -414,11 +432,14 @@ def display_user_menu():
             initiate_checkout(current_sessionid)
         elif option.upper() == 'Q':
             current_sessionid = None
+            current_user = None
             print(COLOR_ACTION + "Logging out now, see you next time !" + COLOR_NORMAL)
             break
         else:
-            print(COLOR_ATTENTION + "Invalid option. Please enter a valid option (1-4, or 'Q')" + COLOR_NORMAL)
+            print(COLOR_ATTENTION + "Invalid option. Please enter a valid option (1-5, or 'Q')" + COLOR_NORMAL)
 
+
+#   User: Add a Product to Cart from Catalogue function
 def user_add_product_to_cart(current_sessionid):
     print(COLOR_USER_MENU + "-------------------------------------------------")
     print("-- User: Add a Product to Cart from Catalogue ")
@@ -442,10 +463,10 @@ def user_add_product_to_cart(current_sessionid):
 
     shopping_cart.add_product_to_cart(current_sessionid, product_id, product_qty)
 
-
+#   User:  Remove a Product from Cart function
 def user_remove_product_from_cart(current_sessionid):
     print(COLOR_USER_MENU + "-------------------------------------------------")
-    print("-- User: Remove a Product to Cart from Catalogue ")
+    print("-- User: Remove a Product from Cart  ")
     print("-------------------------------------------------" + COLOR_NORMAL)
     # Check if the cart is empty
     if not any(item['session_id'] == current_sessionid for item in shopping_cart.cart):
@@ -472,8 +493,10 @@ def user_remove_product_from_cart(current_sessionid):
         except ValueError:
             print(COLOR_ATTENTION + "-- Invalid input. Please enter a numeric product id." + COLOR_NORMAL)
 
+
+#   User: Checkout the items from shopping cart function
 def initiate_checkout(session_id):
-    global COLOR_ATTENTION, COLOR_HIGHLIGHT, COLOR_NORMAL, current_sessionid
+    global COLOR_ATTENTION, COLOR_HIGHLIGHT, COLOR_NORMAL, current_sessionid, current_user
 
     # Check if the cart is empty
     if not any(item['session_id'] == session_id for item in shopping_cart.cart):
@@ -508,24 +531,30 @@ def initiate_checkout(session_id):
             print(COLOR_ATTENTION + "Invalid input. Please select a valid payment method or press 'B' to go back." + COLOR_NORMAL)
             
         print(COLOR_ACTION + "-------------------------------------------------")
-        print("-- You will now be logout; thank you for placing the order !")
+        print("-- Checkout complete ! ")
+        print("-- You will now be logout; Thank you for placing the order !")
         print("-------------------------------------------------"+COLOR_NORMAL)
+        # Reset session state for safety before returning to login
         current_sessionid = None
-        sys.exit(0)
+        current_user = None
+        return
 
 ### Part D Shopping Cart Application classes
+
+#   Class: Product Catalogue
 
 class ProductCatalogue:
     # Initialize Default Product Catalogue
     def __init__(self):
         self.products = [
-        {"product_id": 1, "product_name": "Leather Boot", "category_id": 1, "product_price": 200.0},
+        {"product_id": 1, "product_name": "Leather Boots", "category_id": 1, "product_price": 200.0},
         {"product_id": 2, "product_name": "Overhead Coat (Brown)", "category_id": 2, "product_price": 250.0},
         {"product_id": 3, "product_name": "Leather Jacket (Black)", "category_id": 3, "product_price": 350.0},
         {"product_id": 4, "product_name": "Baseball Cap (MLB)", "category_id": 4, "product_price": 50.0},
         {"product_id": 5, "product_name": "Google Chromecast", "category_id": 5, "product_price": 150.0}
     ]
 
+#   add product to catalogue
     def add_product(self, product_id, product_name, category_id, product_price):
         self.products.append({
             "product_id": int(product_id),
@@ -534,9 +563,11 @@ class ProductCatalogue:
             "product_price": product_price
         })
 
+#   remove product from catalogue
     def remove_product(self, product_id):
         self.products = [product for product in self.products if product["product_id"] != product_id]
 
+#   display products in current catalogue
     def display_product_catalogue(self):
         global COLOR_NORMAL, COLOR_ACTION, COLOR_HIGHLIGHT
 
@@ -566,19 +597,21 @@ class ProductCatalogue:
             print(row)
         print("-" * len(header))
 
+#   common function to display product name using product id
     def lookup_product_name(self, product_id):
             for product in self.products:
                 if product['product_id'] == product_id:
                     return product['product_name']
             return "Unknown Product"
 
-    #return whole product class 
+#   common function to return the entire product attributes using product id
     def lookup_product(self, product_id):
             for product in self.products:
                 if product['product_id'] == product_id:
                     return product
             return "Unknown Product"
 
+#   Class: Product Category
 
 class ProductCategory:
     # Initialize Default Product Categories
@@ -590,13 +623,16 @@ class ProductCategory:
             {"category_id": 4, "category_name": "Caps"},
             {"category_id": 5, "category_name": "General Electronics"},
     ]
-
+        
+#   add a new category
     def add_category(self, category_id, category_name):
         self.categories.append({"category_id": category_id, "category_name": category_name})
 
+#   remove a category
     def remove_category(self, category_id):
         self.categories = [category for category in self.categories if category["category_id"] != category_id]
 
+#   modify a category
     def modify_category(self, category_id):
         global product_category  
         product_category.display_existing_category()
@@ -611,7 +647,7 @@ class ProductCategory:
         product_category.add_category(category_id, new_category_name)
         print(COLOR_ACTION + f"Category ID '{category_id}' name is changed to '{new_category_name}'"+COLOR_NORMAL)
 
-
+#   display current category as a list
     def display_existing_category(self):
         global product_category, COLOR_HIGHLIGHT, COLOR_NORMAL
         print(COLOR_HIGHLIGHT + "-------------------------------------------------")
@@ -631,12 +667,13 @@ class ProductCategory:
 
         # Sort the categories by category_id in ascending order
         sorted_categories = sorted(self.categories, key=lambda x: x['category_id'])
-
-        # Table rows
         for category in sorted_categories:
             row = "| {category_id:<15} | {category_name:<30} |".format(**category)
             print(row)
         print("-------------------------------------------------")
+
+
+#   lookup a category name using category id, return "Uncategorized" if the category id no longer exist (or cannot be found)
 
     def lookup_category_name(self, category_id):
             for category in self.categories:
@@ -645,6 +682,7 @@ class ProductCategory:
             return "Uncategorized" 
 
 
+# User Class: Login DB and general functions
 class UserDatabase:
     # Initialize Default User DB
     def __init__(self):
@@ -654,6 +692,7 @@ class UserDatabase:
             {"user_id": 3, "user_name": "admin", "user_password": "adminpass", "user_role": "A", "email": "admin@demo-shoppingcart.com"},     
         ]
 
+#   Add a new user to  current users 
     def add_user(self, user_id, user_name, user_password, user_role, email):
         self.users.append({
             "user_id": user_id,
@@ -663,20 +702,24 @@ class UserDatabase:
             "email": email
         })
 
+#   Remove a user 
     def remove_user(self, user_id):
         self.users = [user for user in self.users if user["user_id"] != user_id]
 
+# Lookup user with username and password, if match return the user 
     def lookup_user(self, username, password):
         for user in self.users:
             if user['user_name'] == username and user['user_password'] == password:
                 return user
         return None
 
+# ShoppingCart Class: for user shopping experience
 
 class ShoppingCart:
     def __init__(self):
         self.cart = []
 
+#   add a product to ShoppingCart
     def add_product_to_cart(self, session_id, product_id, qty):
         product = next((item for item in product_catalogue.products if item["product_id"] == product_id), None)
         print("-------------------------------------------------")
@@ -687,7 +730,7 @@ class ShoppingCart:
             for item in self.cart:
                 if item["session_id"] == session_id and item["product_id"] == product_id:
                     item["quantity"] += qty
-                    print(COLOR_ACTION + f"Added {qty} units more of {product['product_name']} to cart." + COLOR_NORMAL)
+                    print(COLOR_ACTION + f"Added {qty} unit(s) more of {product['product_name']} to cart." + COLOR_NORMAL)
                     return
                 
             #  If this is a new item added to cart    
@@ -699,20 +742,19 @@ class ShoppingCart:
                 "product_price": product["product_price"]
             }
             self.cart.append(cart_item)
-            print(COLOR_ACTION + f"Added {qty} units of {product['product_name']} to cart." + COLOR_NORMAL)
+            print(COLOR_ACTION + f"Added {qty} unit(s) of {product['product_name']} to cart." + COLOR_NORMAL)
         else:
             print(COLOR_ATTENTION + "Product not found in catalogue."+ COLOR_NORMAL)
         print("-------------------------------------------------")
 
         
-
+#   Function to remove a product from ShoppingCart
     def remove_product_from_cart(self, session_id, product_id):
         self.cart = [item for item in self.cart if not (item["session_id"] == session_id and item["product_id"] == product_id)]
 
-        
+#   Function to display current items in ShoppingCart
     def display_items_in_cart(self, session_id):
         global COLOR_NORMAL, COLOR_ACTION, COLOR_HIGHLIGHT
-
 
         # Check if the cart is empty
         if not any(item['session_id'] == session_id for item in self.cart):
@@ -742,6 +784,7 @@ class ShoppingCart:
         print("-" * len(header))
         print(COLOR_ACTION + f"Subtotal: ${subtotal}" + COLOR_NORMAL)
 
+#   Function to calculate total amount $ of items in ShoppingCart
     def calculate_invoice(self, session_id):
         total_cost = 0
         for item in self.cart:
@@ -749,6 +792,7 @@ class ShoppingCart:
                 total_cost += item['product_price'] * item['quantity']
         return total_cost
 
+# PaymentGateway Class for Checkout, link to external payment gateways or further payment flows
 class PaymentGateway:
  # Initialize Default Options for payment Gateway
     def __init__(self):
@@ -758,6 +802,8 @@ class PaymentGateway:
             {"pgw_id": 3, "pgw_name": "UPI"},     
             {"pgw_id": 4, "pgw_name": "BITCOIN PAYMENT"},     
         ]
+
+#   Display current list of available payment gateways
     def display_available_pgw(self):
         print(COLOR_HIGHLIGHT + "-------------------------------------------------")
         print("-- Available Payment Gateways")
@@ -779,30 +825,27 @@ class PaymentGateway:
             print(row)
         print("-------------------------------------------------")
 
+#   Checkout by Visa / Master via Net Banking
     def checkout_by_visa_master(session_id, payment_amount):
         print(COLOR_ATTENTION + f"Your payment link is generated. please open this link in browser to continue the payment")
         print(COLOR_ACTION + f"https://www.net-banking.com/pay.php?order={session_id}&amount={payment_amount}")    
 
+#   Checkout by Paypal
     def checkout_by_paypal(session_id, payment_amount):
         print(COLOR_ATTENTION +f"Your  link is generated. Please continue to paypal.com to proceed payment")
         print(COLOR_ACTION + f"https://www.paypal.com/pay.php?order={session_id}&amount={payment_amount}")    
-   
+
+#   Checkout by UPI
     def checkout_by_upi(session_id, payment_amount):
         print(COLOR_ATTENTION + f"You will soon receive an email at your registered email address. Please continue the payment amount of ${payment_amount} detailed in the email.")
-   
+
+
+#   Checkout by crytocurrency
     def checkout_by_bitcoin(session_id, payment_amount):
         print(COLOR_ATTENTION + f"You will soon receive an email at your registered email address. Please continue the payment amount of ${payment_amount} from your cryptocurrency wallet with instructions in the email.")
    
 
-
-#It is necessary to construct a sample product catalog with three to four product categories, such as Boots, Coats, Jackets, and Caps. 
-#The product id, name, category id, and price should all be present for each item in the dummy database of the catalog. 
-#Both users and administrators can view the catalog.
-
-
 ## Part E Program Execution
-#   User login and admin login should be created once the code for the welcome message has been written. 
-#   For the creation of demo login and admin login, demo databases for those should be created for the user and admin verification, and session id creation.
     
 # Instantiate Classes
 product_catalogue = ProductCatalogue()
@@ -813,11 +856,16 @@ pgw = PaymentGateway()
 
 ##DEMO Shopping Cart Main Code
 def main():
-    display_welcome_msg()
-    display_login()
+    while True:
+        display_welcome_msg()
+        display_login()
 
 
-
-#Execute Demo Marketplace Shopping Cart Program
+#Execute Demo Marketplace Shopping Cart Program via commandline python
+#> python3 main.py
+    
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\nShoppingCart Application quit by Ctrl-C / Keyboard Interrupt")
