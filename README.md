@@ -1,49 +1,69 @@
-# Simple Shopping Cart simluation in Python
+# Shopping Cart Python Course End Project
 
-## Phase-End Project: Creating a Shopping App Using Python
+## Project Overview
 
-### Problem Scenario
+A Python-based shopping cart application with features such as user authentication, product management, and payment gateway integration.
 
-You have to develop a shopping application or e-commerce application which has login and public login features on the Python platform. The applications that have been developed should also include categories, such as 3–4 for footwear, clothing, electronics, etc.
+## Problem Statement
 
-### Guidelines
+- Requirements are described in './Problem Statement.md'
 
-#### Welcome Message
+## Features
 
-- A welcome message should initially be displayed in the e-commerce application, such as "Welcome to the Demo Marketplace".
+- User authentication with login and logout functionality
+- Product catalog with categorization and search functionality
+- Shopping cart with add, remove, and update item functionality
+- Payment gateway integration with multiple options (e.g., PayPal, Visa/Mastercard)
 
-#### User and Admin Login
+## Requirements
 
-- User login and admin login should be created once the code for the welcome message has been written.
-- For the creation of demo login and admin login, demo databases for those should be created for the user and admin verification, and session id creation.
+- Python 3.8+
+- pip (Python package manager)
+- Required libraries:
+  - `requests`
+  - `json`
+  - `datetime`
 
-#### Product Catalog
+## Installation
 
-- Create a sample product catalog with three to four product categories, such as Boots, Coats, Jackets, and Caps.
-- The product id, name, category id, and price should all be present for each item in the dummy database of the catalog.
+1. Clone the repository: `git clone https://github.com/kasnol/shoppingcart-python.git`
+2. Create and activate a virtual environment:
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate
+   ```
+3. Install required libraries: `pip install -r requirements.txt`
+4. Run the application: `python main.py`
 
-#### User Rights
+## Usage
 
-- User login rights include the ability to view cart contents, add items to carts, and remove items from carts.
-- The user should be able to add items or delete items in the cart using session id, product id, and quantity.
+- Run the application and follow the on-screen instructions to navigate through the shopping cart features.
+- Use the payment gateway integration to simulate payments.
 
-#### Payment Checkout Options
+## Contributing
 
-- Provide demo payment checkout options, like Net banking, PayPal, UPI, etc.
-- After selecting the payment option, a checkout message like, "Your order is successfully placed" or "You will be shortly redirected to the portal for Unified Payment Interface to make a payment of Rs. 2000", etc., should be displayed.
+Contributions are welcome! If you'd like to contribute, please fork the repository and submit a pull request with your changes.
 
-#### Admin Rights
+## License
 
-- The admin can only log in using his credentials, and if the admin attempts to log in using another set of credentials, an error notice must appear.
-- Admin should not be able to interfere with any of the functions that the user can perform, as discussed above. An error should appear if the admin tries to carry out those tasks.
+The MIT License (MIT)
 
-#### Admin Product Management
+Copyright (c) @kasnol 2021, 2024
 
-- The admin should be able to add new products to the catalog using an admin session id.
-- The program needs to make it possible for an existing product to be modified using an admin session id.
-- The admin should then have the ability to remove any existing products from the already-generated catalog.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
 
-#### Admin Category Management
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
 
-- The admin should be able to add a new category of product and delete the prevailing category of product from the catalog.
-- Users should not be able to take advantage of any of the admin's rights, as described above.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.

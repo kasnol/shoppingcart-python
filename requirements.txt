@@ -1,0 +1,7 @@
+colorama==0.4.4
+
+# Optional libraries (not used in the provided code, but might be useful for future development)
+numpy==1.22.3
+pandas==1.4.2
+flask==2.0.3
+sqlalchemy==1.4.32
